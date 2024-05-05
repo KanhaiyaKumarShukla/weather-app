@@ -1,0 +1,82 @@
+HttpConnection Property:-
+
+1. instanceFollowRedirects :- There is a property of redirect in Http, which can direct to another location. Its status code 301 or 302. If it is set true
+      the HttpURLConnection instance will automatically follow the redirect.
+
+2. setRequestProperty(key:String!, value:String!) :- The requestProperties are typically used for sending custom headers required by the server, such as authentication tokens,
+      content type, accept headers, etc. These headers provide additional information to the server about the request being made.  These headers are sent with the HTTP request to the server.
+      * Content-Type: It indicates the format of the data being sent to the server. Common values include application/json for JSON data.
+      * Accept:  It informs the server about the types of responses that the client is willing to accept.
+      * Authorization: This header is used to provide authentication credentials for accessing protected resources on the server. It typically contains a token or credentials that
+        authenticate the client's identity to the server.
+
+3. useCaches:- This property allows you to control whether the URL connection uses the cache when fetching resources. When useCaches is set to true (which is the default behavior),
+      the URL connection may use cached data when retrieving resources. This means that if the requested resource is already cached locally, the URL connection may return
+      the cached data without making a network request. On the other hand, when useCaches is set to false, the URL connection will not use cached data and will always attempt
+      to fetch the resource from the network, regardless of whether it is available in the cache.
+
+
+
+*OutputStream:- An output stream accepts output bytes and sends them to some sink.  It represents an output stream of bytes and is used for writing data to various destinations,
+      such as files, network sockets, or in-memory buffers. we use one of its concrete subclass, such as:
+
+      1.FileOutputStream:- Writing data to a file is a common use case in Android applications. You can use FileOutputStream to create an OutputStream for writing bytes to a file. For example:
+          val outputStream: OutputStream = FileOutputStream("myfile.txt")
+          outputStream.write("Hello, OutputStream!".toByteArray())
+
+      2.HttpURLConnection:-  When communicating with servers over a network, you often need to send data using output streams. You can use HttpURLConnection to establish a connection
+           and obtain an OutputStream for writing data to the server. for ex.
+
+               val url = URL("https://example.com/api")
+               val connection: HttpURLConnection = url.openConnection() as HttpURLConnection
+               connection.requestMethod = "POST"
+               connection.doOutput = true
+
+               val outputStream: OutputStream = connection.outputStream
+               outputStream.write("Data to send".toByteArray())
+
+
+* DataOutputStream:- It  provides methods for writing primitive Java data types to an output stream. It allows you to serialize Java objects and write them to an output stream, which is
+  particularly useful when working with binary data or network communication.
+
+  Constructor: DataOutputStream(OutputStream out)
+  Method:-
+  1. flush():- When you write data to an output stream, the data is often buffered in memory before it is actually written to the destination (e.g., a file, network socket, etc.).
+              Flushing the stream ensures that any buffered data is immediately written out, rather than waiting for the buffer to fill up or for the stream to be closed.
+
+  2. writeBytes(s:String):- It writes a string to the underlying output stream as a sequence of bytes. Each character in the string is converted to its corresponding
+              byte representation using the platform's default charset encoding.
+
+  3. writeBoolean(v: boolean):- write the boolean to 1-byte value.
+
+  4. writeLong (long v), writeInt (int v), writeFloat (float v), writeDouble (double v), etc converts corresponding primitive data type of argument to write to output stream .
+
+
+* How to Execute HTTP POST Requests:-
+ Reference:
+ https://stackoverflow.com/questions/9767952/how-to-add-parameters-to-httpurlconnection-using-post-using-namevaluepair
+
+ 1. Creating HttpURLConnection Object.
+       URL url = new URL(“http://exampleurl.com/”);
+       HttpURLConnection client = null;
+       try {
+       client = (HttpURLConnection) url.openConnection();
+       }
+
+ 2. Set the request method to Post.
+       client.setRequestMethod(“POST”);
+       client.setRequestProperty(“Key”,”Value”);
+       client.setDoOutput(true);
+
+ 3. Output the stream to the server:- You must request the output stream from the server in order to be able to write to the output stream, or post, then flush and close the stream when finished.
+       eg.-
+       OutputStream outputPost = new BufferedOutputStream(client.getOutputStream());
+       writeStream(outputPost);
+       outputPost.flush();
+       outputPost.close();
+
+
+
+
+
+

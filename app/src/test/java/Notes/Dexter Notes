@@ -1,0 +1,6 @@
+
+
+* Dexter is the library that helps to make Runtime Permission in Android, due to these runtime permissions users can grant permission to the app in runtime.
+* we need to add dependency for dexter
+refer to code
+also use reference: https://codelabs.developers.google.com/codelabs/while-in-use-location/#2
