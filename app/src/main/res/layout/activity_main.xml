@@ -390,7 +390,8 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="horizontal"
-        android:padding="10dp">
+        android:padding="10dp"
+        android:visibility="visible">
 
         <ProgressBar
             android:id="@+id/progress_bar"

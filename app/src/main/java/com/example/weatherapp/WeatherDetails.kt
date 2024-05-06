@@ -19,6 +19,7 @@ import java.util.Locale
 import java.util.SimpleTimeZone
 import java.util.TimeZone
 
+// not used any where
 class WeatherDetails(private val context: Activity) {
 
     private val progressLayout: LinearLayout

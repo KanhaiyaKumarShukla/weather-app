@@ -3,32 +3,13 @@ package com.example.weatherapp
 import android.content.Context
 import android.content.Intent
 import android.location.LocationManager
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
-import com.google.gson.Gson
 import com.karumi.dexter.Dexter
 import com.karumi.dexter.MultiplePermissionsReport
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.DataOutputStream
-import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
-import java.lang.Exception
-import java.net.HttpURLConnection
-import java.net.MalformedURLException
-import java.net.URL
-import java.nio.charset.Charset
-import kotlin.properties.Delegates
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
@@ -36,11 +17,17 @@ import android.location.Location
 
 import android.net.Uri
 import android.os.Looper
+import android.view.View
 import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.ViewModelProvider
 import com.example.weatherapp.Models.WeatherResponse
 import com.example.weatherapp.NetworkRequest.RetrofitObject
 import com.example.weatherapp.NetworkRequest.WeatherService
+import com.example.weatherapp.viewModel.WeatherViewModel
+import com.example.weatherapp.viewModel.WeatherViewModelFactory
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationRequest.Builder
@@ -53,6 +40,10 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 
 class MainActivity : AppCompatActivity() {
@@ -60,9 +51,58 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
     private val mRefreshBtn:ImageView
         get() = findViewById(R.id.iv_refresh)
-    private val TAG= MainActivity::class.java.simpleName
 
+    private val progressLayout: LinearLayout
+        get() = findViewById(R.id.loading_layout)
 
+    private val mEmptyTextView: TextView
+        get() = findViewById(R.id.empty_tv)
+
+    private val WeatherLayout: LinearLayout
+        get() = findViewById(R.id.weather_layout)
+    private val mTvMain: TextView
+        get() = findViewById(R.id.tv_main)
+
+    private val mTvDescr: TextView
+        get() = findViewById(R.id.tv_main_description)
+
+    private val mTvTemp: TextView
+        get() = findViewById(R.id.tv_temp)
+
+    private val mTvHumidity: TextView
+        get() = findViewById(R.id.tv_humidity)
+
+    private val mTvMin: TextView
+        get() = findViewById(R.id.tv_min)
+
+    private val mTvMax: TextView
+        get() = findViewById(R.id.tv_max)
+
+    private val mTvSpeed: TextView
+        get() = findViewById(R.id.tv_speed)
+
+    private val mTvSpeedUnit: TextView
+        get() = findViewById(R.id.tv_speed_unit)
+
+    private val mTvCountry: TextView
+        get() = findViewById(R.id.tv_country)
+
+    private val mTvName: TextView
+        get() =findViewById(R.id.tv_name)
+
+    private val mTvSunrise: TextView
+        get() = findViewById(R.id.tv_sunrise_time)
+
+    private val mTvSunset: TextView
+        get() = findViewById(R.id.tv_sunset_time)
+
+    private val mIvMain:ImageView
+        get() = findViewById(R.id.iv_main)
+
+    //private val TAG= MainActivity::class.java.simpleName
+    private val TAG="MainActivity"
+
+    private lateinit var mViewModel:WeatherViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -148,10 +188,27 @@ class MainActivity : AppCompatActivity() {
             if (latitude != null && longitude != null) {
                 Log.i(TAG, "enter into weather Detail")
 
-                WeatherDetails(this@MainActivity).getLocationWeatherDetails(latitude, longitude)
+                //WeatherDetails(this@MainActivity).getLocationWeatherDetails(latitude, longitude)
+                val repository=(application as WeatherApplication).weatherRepository
+                mViewModel=ViewModelProvider(this@MainActivity, WeatherViewModelFactory(repository, latitude, longitude))[WeatherViewModel::class.java]
+                mViewModel.weatherResponse.observe(this@MainActivity){
+                    progressLayout.visibility= View.GONE
+                    if(it!=null){
+                        //Log.i("KanhaiyaResponse", "Data available!")
+                        WeatherLayout.visibility=View.VISIBLE
+                        setUI(it)
+                    }else{
+                        //Log.i("KanhaiyaResponse", "Data not available!")
+                        mEmptyTextView.visibility=View.VISIBLE
+                        mEmptyTextView.text="Data not available!"
+                    }
+                }
 
             }else{
                 Log.i(TAG, "Latitude and Longitude null found!")
+                progressLayout.visibility= View.GONE
+                mEmptyTextView.visibility=View.VISIBLE
+                mEmptyTextView.text="Location is not accessiable!"
             }
         }
     }
@@ -185,6 +242,55 @@ class MainActivity : AppCompatActivity() {
     private fun isLocationEnable():Boolean{
         val locationManager:LocationManager=getSystemService(Context.LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    private fun setUI(weatherList:WeatherResponse) {
+        val weather=weatherList.weather[0]
+        mTvMain.text=weather.main
+        mTvDescr.text=weather.description
+        val main=weatherList.main
+        //context.application.resources.configuration.locales.toString() :- here we are accessing the configuration of app using resource and then locales which will give location code.
+        mTvTemp.text=getString(R.string.format_detail, main.temp.toString(), getUnit(application.resources.configuration.locales[0].toString()))
+        //Log.i("Locals", context.application.resources.configuration.locales[0].toString())
+        mTvHumidity.text=getString(R.string.format_detail, main.humidity.toString(), "%")
+        mTvMin.text=getString(R.string.format_detail,main.temp_min.toString(), "min")
+        mTvMax.text=getString(R.string.format_detail,main.temp_min.toString(), "min")
+        mTvSunrise.text=formatTime(weatherList.sys.sunrise)
+        mTvSunset.text=formatTime(weatherList.sys.sunset)
+
+        mTvSpeed.text=weatherList.wind.speed.toString()
+
+        mTvName.text=weatherList.name
+        mTvCountry.text=weatherList.sys.country
+
+        mIvMain.setImageResource(
+            when(weather.icon){
+                "01d"->R.drawable.sunny
+                "02d", "03d", "04d", "04n", "01n", "02n","03n", "10n"->R.drawable.cloud
+                "10d", "11n"->R.drawable.rain
+                "11d"->R.drawable.storm
+                "13d","13n"->R.drawable.snowflake
+                else ->R.drawable.sunny
+
+            }
+        )
+    }
+
+    private fun getUnit(value:String):String{
+        var result:String?=null
+        result=when(value) {
+            //US: United States , LR: Liberia , MM: Myanmar
+            "US", "LR", "MM" -> "℉"
+            else -> "℃"
+        }
+        return result
+    }
+    private fun formatTime(time:Long):String{
+        // the time is in second , to convert it in millisecond we have multiple it by 1000
+        val date= Date(time*1000L)
+        val format= SimpleDateFormat("HH:mm", Locale("en", "IN"))
+        format.timeZone= TimeZone.getDefault()
+        return format.format(date)
     }
 
 }

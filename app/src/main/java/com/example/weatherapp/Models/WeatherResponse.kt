@@ -1,11 +1,16 @@
 package com.example.weatherapp.Models
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity
 data class WeatherResponse(
     val base: String,
     val clouds: Clouds,
     val cod: Int,
     val coord: Coord,
     val dt: Int,
+    @PrimaryKey
     val id: Int,
     val main: Main,
     val name: String,
