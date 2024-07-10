@@ -65,6 +65,7 @@ For any inquiries or issues, please contact kanhaiyashukla0.01@gmail.com
 
 ## Screenshots
 
-![wi2](https://github.com/KanhaiyaKumarShukla/weather-app/assets/148223010/6dcb6e75-1f1e-482e-9a50-834e8dc7571f)
-![wi1](https://github.com/KanhaiyaKumarShukla/weather-app/assets/148223010/6ca322ba-d76d-4309-a0a9-b1b7e840244b)
+![wi2](https://github.com/KanhaiyaKumarShukla/weather-app/assets/148223010/54fbed4d-b58b-44b1-a3d9-54b231c78a80)
+![wi1](https://github.com/KanhaiyaKumarShukla/weather-app/assets/148223010/69ad58be-0c93-42aa-bbfd-0ac3157ef017)
+
 
